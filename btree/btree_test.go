@@ -120,17 +120,14 @@ func TestConcurrentOperations(t *testing.T) {
 	tree := NewBPlusTree()
 	var wg sync.WaitGroup
 
-	// Number of goroutines for each operation type
 	const numGoroutines = 10
 	const numOperations = 100
 
-	// Launch concurrent insertions
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go func(routineID int) {
 			defer wg.Done()
 
-			// Generate different ranges for each goroutine to avoid duplicates
 			base := routineID * numOperations
 			for j := 0; j < numOperations; j++ {
 				key := int64(base + j)
@@ -144,7 +141,6 @@ func TestConcurrentOperations(t *testing.T) {
 		}(i)
 	}
 
-	// Launch concurrent searches
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go func(routineID int) {
@@ -156,7 +152,7 @@ func TestConcurrentOperations(t *testing.T) {
 				record, err := tree.Search(key)
 
 				if err != nil {
-					continue // Key might not be inserted yet
+					continue 
 				}
 
 				expectedValue := fmt.Sprintf("value-%d-%d", routineID, j)
@@ -167,23 +163,21 @@ func TestConcurrentOperations(t *testing.T) {
 		}(i)
 	}
 
-	// Launch concurrent range searches
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go func(routineID int) {
 			defer wg.Done()
 
 			base := routineID * numOperations
-			for j := 0; j < numOperations/10; j++ { // Fewer range searches
+			for j := 0; j < numOperations/10; j++ { 
 				minKey := int64(base + (j * 10))
 				maxKey := minKey + 9
 
 				records, err := tree.RangeSearch(minKey, maxKey)
 				if err != nil {
-					continue // Range might not be fully populated yet
+					continue 
 				}
 
-				// Verify order
 				for k := 1; k < len(records); k++ {
 					if records[k].Key <= records[k-1].Key {
 						t.Errorf("Range search returned unordered results")
